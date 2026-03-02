@@ -1,7 +1,7 @@
 # datasync
 
 <p align="center">
-  <img src="demo.gif" alt="演示" width="800">
+  <img src="demo.gif" alt="演示" width="400">
 </p>
 
 datasync是一个用于本地化与同步[Tushare数据](https://tushare.pro/)的工具。在投研过程中，频繁从数据源重复抓取数据不仅效率较低下，还会消耗调用额度。因此，更合理的方式是将所需数据一次性下载到本地，后续有需要时直接从硬盘读取。本项目即为此目的而设计，支持本地化Tushare数据并有组织地存储为[Parquet](https://en.wikipedia.org/wiki/Apache_Parquet)文件（该格式体积小、读取高效，可通过pandas的[`pd.read_parquet(filters=)`](https://pandas.pydata.org/docs/reference/api/pandas.read_parquet.html)或[duckdb](https://github.com/duckdb/duckdb)便捷查询与处理）。
@@ -33,7 +33,7 @@ pip install .
 数据同步命令（参数可选）：
 
 ```shell
-python -m datasync [-i <YYYY-MM-DD>] [-p <DIR>]
+python -m datasync [-i YYYY-MM-DD] [-p DIR]
 ```
 
 ## 说明

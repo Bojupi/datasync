@@ -1,7 +1,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict
 from datetime import datetime, timedelta
 
 import pandas as pd
@@ -66,11 +66,11 @@ class UpdatePipline:
     def run(
         self,
         ftask: List[str] = ["calendar", "stock_info", "fund_info", "stock_swind"],
-        itask: List[str] = [
-            "stock_prcvol", "stock_adj", "stock_value", "stock_balance", "stock_income", "stock_cashflow", "stock_indicator", "stock_report",
-            "fund_prcvol", "fund_nav", "fund_adj",
-            "index_prcvol", "index_weight", "swind_prcvol"
-        ],
+        itask: Dict[str, int] = {
+            "stock_prcvol": 1, "stock_adj": 1, "stock_value": 1, "stock_balance": 0, "stock_income": 0, "stock_cashflow": 0, "stock_indicator": 0, "stock_report": 0,
+            "fund_prcvol": 1, "fund_nav": 1, "fund_adj": 1,
+            "index_prcvol": 1, "index_weight": 0, "swind_prcvol": 1
+        },
         init_date: str = "2010-01-01"
     ):
         """
@@ -85,16 +85,16 @@ class UpdatePipline:
         else:
             end_date = (datetime.today() - timedelta(days=1)).strftime("%Y%m%d")
 
-        for it in itask:
-            calendar = pd.read_parquet(self.path/"calendar.parquet")
-            calendar = calendar.loc[calendar.is_open].sort_values("date")
+        for it, open_only in itask.items():
+            calendar = pd.read_parquet(self.path/"calendar.parquet").sort_values("date")
             if it in self.state:
-                update_date = (calendar["date"].loc[(calendar["date"] > self.state[it]) & (
-                    calendar["date"] <= end_date)]).tolist()
+                mask = (calendar["date"] > self.state[it]) & (calendar["date"] <= end_date)
             else:
-                update_date = (calendar["date"].loc[(
-                    calendar["date"] > init_date) & (calendar["date"] <= end_date)]).tolist()
-            for d in update_date:
+                mask = (calendar["date"] > init_date) & (calendar["date"] <= end_date)
+            update_date = calendar.loc[mask]
+            if open_only:
+                update_date = update_date[update_date.is_open]
+            for d in update_date["date"]:
                 self.run_itask(it, d.strftime("%Y%m%d"))
 
 
